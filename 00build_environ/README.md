@@ -1,23 +1,23 @@
-# how2kernel
+# how2kernel————第一节\_环境搭建
 
 ## Author: Wenhuo
 
-&nbsp;&nbsp;&nbsp;&nbsp;<font size=2>最近一边继续学习基础的堆利用技巧，一边入门Linux kernel，第一篇文章我们还是同样讲讲怎么搭建环境吧，现在32位较为早起的Linux kernel的漏洞利用资料比较多，非常适合入门，因此我用了Ubuntu14 32位desktop+Linux kernel2.6.32.1版本的内核用来入门学习，用busybox构建一个简单的文件系统，用qemu模拟运行内核。</font></br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font size=2>最近一边继续学习基础的堆利用技巧，一边入门Linux kernel，第一篇文章我们还是同样讲讲怎么搭建环境吧，现在32位较为早起的Linux kernel的漏洞利用资料比较多，非常适合入门，因此我用了**Ubuntu14 32位desktop+Linux kernel2.6.32.1版本的内核**用来入门学习，用**busybox构建一个简单的文件系统**，用**qemu**模拟运行内核。</font></br>
 
 **编译内核**
 
-&nbsp;&nbsp;&nbsp;&nbsp;<font size=2>首先我们先构建内核，从Linux官方的[镜像网站](https://mirrors.edge.kernel.org/pub/linux/kernel/)上下载2.6.32.1版本的内核代码。解压后到文件里make menuconfig设置好配置文件，一般来讲**确保下列选项是勾选**的：</font></br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font size=2>首先我们先构建内核，从Linux官方的[镜像网站](https://mirrors.edge.kernel.org/pub/linux/kernel/)上下载2.6.32.1版本的内核代码。解压后到文件里**make menuconfig**设置好配置文件，一般来讲**确保下列选项是勾选**的：</font></br>
 
-KernelHacking-->
+**KernelHacking-->**
 
-- Compile the kernel with debug info
-- Compile the kernel with frame poiners
+- **Compile the kernel with debug info**
+- **Compile the kernel with frame poiners**
 
 &nbsp;&nbsp;&nbsp;&nbsp;<font size=2>然后**去掉**：</font></br>
 
-Processor type and features-->
+**Processor type and features-->**
 
-- Paravirtualized guest support
+- **Paravirtualized guest support**
 
 &nbsp;&nbsp;&nbsp;&nbsp;<font size=2>然后直接make，make all，make modules就行了。但是生活怎么会对我们这么好呢？马上make就报错了（因为目前版本的gcc版本过高，kernel版本过低，有些语法已经不能使用），所以make之前我们要先做一些改动：</font></br>
 
@@ -28,21 +28,21 @@ Processor type and features-->
 
 **编译busybox**
 
-&nbsp;&nbsp;&nbsp;&nbsp;<font size=2>然后我们开始用busybox搭建一个简单的文件系统，在busybox的镜像网站上下载（选最新版本就行）压缩包，然后解压同样进入文件目录用make menuconfig设置配置文件，**关闭以下选项**：</font></br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font size=2>然后我们开始用busybox搭建一个简单的文件系统，在busybox的镜像网站上下载（选最新版本就行）压缩包，然后解压同样进入文件目录用**make menuconfig**设置配置文件，**关闭以下选项**：</font></br>
 
-Linux System Utilities-->
+**Linux System Utilities-->**
 
-- Support mounting NFS file system
+- **Support mounting NFS file system**
 
-Networking Utilities-->
+**Networking Utilities-->**
 
-- inetd
+- **inetd**
 
 &nbsp;&nbsp;&nbsp;&nbsp;<font size=2>**打开选项**：</font></br>
 
-Settings --> Build Options ->
+**Settings --> Build Options ->**
 
-- Build Busybox as a static binary
+- **Build Busybox as a static binary**
 
 &nbsp;&nbsp;&nbsp;&nbsp;<font size=2>然后make，make结束之后sudo make install。结束了之后cd _install进入安装完了的目录，进行如下配置：</font></br>
 
