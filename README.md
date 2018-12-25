@@ -5,7 +5,7 @@
 
 how2kernel
 ========
-- Linux kernel环境搭建
+- [Linux kernel环境搭建](https://github.com/fangdada/kernelPWN/tree/master/00build_environ)
 - ...
 
 

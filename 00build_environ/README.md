@@ -1,4 +1,4 @@
-# how2kernel————第一节\_环境搭建
+# how2kernel————第一节环境搭建
 
 ## Author: Wenhuo
 
