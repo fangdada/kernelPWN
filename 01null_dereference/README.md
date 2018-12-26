@@ -76,6 +76,28 @@ int main(){
 
 ![shellcode](./002.JPG)
 
+&nbsp;&nbsp;&nbsp;&nbsp;<font size=2>我的Makefile:</font></br>
+
+```makefile
+obj-m := null_dereference.o  
+
+KERNELDR := /home/fanda/Desktop/file/linux-2.6.32.1
+BUSYDIR  := /home/fanda/Desktop/file/busybox-1.29.3/_install/mytest
+PWD := $(shell pwd)  
+
+modules:  
+	$(MAKE) -C $(KERNELDR) M=$(PWD) modules  
+	gcc -o poc poc.c -static
+	cp *.ko $(BUSYDIR)
+	cp poc $(BUSYDIR)
+	cd $(BUSYDIR)/../ && find . | cpio -o --format=newc > ../rootfs.img
+clean:  
+	rm -rf *.o *~ core .depend .*.cmd *.ko *.mod.c .tmp_versions
+
+```
+
+
+
 &nbsp;&nbsp;&nbsp;&nbsp;<font size=2>然后我们在qemu虚拟机里创建用户进行测试，为了避免麻烦我们直接写一个脚本（makeuser.sh）用来安装模块创建用户，并重新用cpio生成文件镜像：</font></br>
 
 ```shell
