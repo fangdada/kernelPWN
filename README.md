@@ -7,6 +7,7 @@ how2kernel
 ========
 - [Linux kernel环境搭建](https://github.com/fangdada/kernelPWN/tree/master/00build_environ)
 - [null dereference](https://github.com/fangdada/kernelPWN/tree/master/01null_dereference)
+- [stack smashing](https://github.com/fangdada/kernelPWN/tree/master/02stack_smashing)
 - ...
 
 # how2pwn
