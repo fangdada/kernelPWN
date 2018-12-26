@@ -6,7 +6,7 @@
 
 ![内存分布](./000.JPG)
 
-&nbsp;&nbsp;&nbsp;&nbsp;<font size=2>所以假设我们有一个存在null dereference的漏洞的内核模块，当我们用一个用户进程去访问时，mmap映射一块从0开始的内存，然后在这块内存中布置好shellcode，然后调用未初始化函数指针时就会去调用我们的shellcode，完成提权攻击。所以有如下漏洞代码：</font></br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font size=2>所以假设我们有一个存在null dereference的漏洞的内核模块，当我们用一个用户进程去访问时，**mmap映射一块从0开始的内存**，然后在这块内存中布置好shellcode，然后调用未初始化函数指针时就会去调用我们的shellcode，完成提权攻击。所以有如下漏洞代码：</font></br>
 
 ```C
 #include <linux/init.h>
@@ -34,7 +34,7 @@ module_exit(null_dereference_exit);
 
 ```
 
-&nbsp;&nbsp;&nbsp;&nbsp;<font size=2>看不懂内核代码也没事，我们即使看到init和exit也可以猜测到这是注册了初始化函数和退出函数。内核驱动的模块创建有一个约定就是用module_init注册驱动创建的主函数，然后用module_exit注册驱动的清理与卸载函数。这里我们用了null_dereference_init作为注册函数，然后函数很简单，没有申请设备号，没有注册设备，只是设置了一个入口函数，就是我们的漏洞函数bug1_write（用create_proc_entry返回的结构直接访问write_proc在高版本内核中已不可行），bug1_write调用了一个未初始化的函数指针。</font></br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font size=2>看不懂内核代码也没事，我们即使看到init和exit也可以猜测到这是**注册了初始化函数和退出函数**。内核驱动的模块创建有一个约定就是用**module\_init注册驱动创建的主函数**，然后用**module_exit注册驱动的清理与卸载函数**。这里我们用了null_dereference_init作为注册函数，然后函数很简单，没有申请设备号，没有注册设备，只是设置了一个入口函数，就是我们的漏洞函数bug1_write（**用create_proc_entry返回的结构直接访问write_proc在高版本内核中已不可行**），**bug1_write调用了一个未初始化的函数指针**。</font></br>
 
 &nbsp;&nbsp;&nbsp;&nbsp;<font size=2>接下来我们看我们的用户层测试代码：</font></br>
 
@@ -92,7 +92,7 @@ su fanda
 
 ```
 
-&nbsp;&nbsp;&nbsp;&nbsp;<font size=2>这一句sysctl -w vm.mmap_min_addr="0"是什么意思？是因为在这个内核版本中内核已经有了设置mmap的最小地址为0x1000作为缓解措施，所以我们要关闭之。运行poc：</font></br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font size=2>这一句sysctl -w vm.mmap_min_addr="0"是什么意思？是因为在这个内核版本中内核已经有了**设置mmap的最小地址为0x1000**作为缓解措施，所以我们要关闭之。运行poc：</font></br>
 
 ```shell
 /mytest # su fanda
@@ -186,7 +186,7 @@ if __name__ == '__main__':
 
 &nbsp;&nbsp;&nbsp;&nbsp;<font size=2>这就能得到我们最终的shellcode了，等等，这两个call的绝对地址是怎么来的？为什么是这两个函数？</font></br>
 
-&nbsp;&nbsp;&nbsp;&nbsp;<font size=2>在kernel中，给进程赋予root权限就是用prepare_kernel_cred()函数，参数用0表示root，然后commit_creds函数就是相当于提交凭证，就可以完成提权了，在我们用qemu生成的内核虚拟机的终端中用grep prepare_kernel_cred /proc/kallsyms就可以得到这些地址了（前提是内核未开启地址泄漏保护），同理也可以得到commit_creds函数的地址：</font></br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font size=2>在kernel中，给进程赋予root权限就是用prepare_kernel_cred()函数，参数用0表示root，然后commit_creds函数就是相当于提交凭证，就可以完成提权了，在我们用qemu生成的内核虚拟机的终端中用**grep prepare_kernel_cred /proc/kallsyms**就可以得到这些地址了（**前提是内核未开启地址泄漏保护**），同理也可以得到commit_creds函数的地址：</font></br>
 
 ```shell
 / # grep prepare_kernel_cred /proc/kallsyms 
@@ -207,7 +207,7 @@ c160d235 r __kstrtab_commit_creds
 
 **remote gdb**
 
-&nbsp;&nbsp;&nbsp;&nbsp;<font size=2>之前我们开启qemu虚拟机的时候用了-s参数开启了远程调试端口，所以我们只需要用gdb的target remote：1234就能attach上去了，还有一些要注意的是gdb要选取linux kernel文件夹下的vmlinux作为调试文件。然后最好添加symbol文件方便直接下断点，后面要跟一个模块基地址，基地址可以在insmod安装之后用这个命令取得：</font></br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font size=2>之前我们开启qemu虚拟机的时候用了-s参数开启了远程调试端口，所以我们只需要用**gdb的target remote：1234就能attach上去了**，还有一些要注意的是gdb要选取**linux kernel文件夹下的vmlinux作为调试文件**。然后最好添加**symbol文件**方便直接下断点，后面要跟一个模块基地址，基地址可以在insmod安装之后用这个命令取得：</font></br>
 
 ```shell
 /mytest # cat /proc/modules 
