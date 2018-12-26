@@ -77,7 +77,7 @@ clean:
 
 ```
 
-&nbsp;&nbsp;&nbsp;&nbsp;<font size=2>用boot.sh启动qemu之后，直接执行poc可以发现eip最后地址为0x42424242（如果不行的话应该是开了STACKPROTECTOR，编辑linux kernel目录下的.config文件，注释掉重新make一下就行了），偏移可以根据调试得到，函数ret末尾的汇编如下：</font></br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font size=2>用boot.sh启动qemu之后，直接执行poc可以发现eip最后地址为0x42424242（如果不行的话应该是开了栈保护，编辑linux kernel目录下的**.config**文件，注释掉"CONFIG\_CC\_STACKPROTECTOR=y"重新make一下就行了），偏移可以根据调试得到，函数ret末尾的汇编如下：</font></br>
 
 ```assembly
    0xc883001e <bug2_write+30>    je     bug2_write+34 <0xc8830022>
@@ -90,9 +90,9 @@ clean:
 
 ```
 
-&nbsp;&nbsp;&nbsp;&nbsp;<font size=2>所以最后需要填充的大小为8（add esp,8）+4（pop esi）+4（pop edi）+4（pop ebp）=20，随后的一个4就会被ret放入eip返回，成功劫持流程。知道了如何劫持流程之后我们很轻松的用commit_creds(prepare_kernel_cred(0))提权，但难处就在于如何返回一个用户层的shell（我们不能在kernel态直接执行用户层的代码'system("/bin/sh");'来getshell）。这里我们就用到了ROP，ROP是栈溢出中一个非常经典的技术，在这道题中我们可以自己编写ROP。所以我们的步骤是：</font></br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font size=2>所以最后需要填充的大小为8（add esp,8）+4（pop esi）+4（pop edi）+4（pop ebp）=20，随后的一个4就会被ret放入eip返回，成功劫持流程。知道了如何劫持流程之后我们很轻松的用commit_creds(prepare_kernel_cred(0))提权，但难处就在于如何返回一个用户层的shell（**我们不能在kernel态直接执行用户层的代码'system("/bin/sh");'来getshell**）。这里我们就用到了ROP，ROP是栈溢出中一个非常经典的技术，在这道题中我们可以**自己编写ROP**。所以我们的步骤是：</font></br>
 
-- 构造好trap_frame结构；
+- 构造好**trap_frame**结构；
 - 控制eip到ROP跳板指令上；
 - 用ROP指令返回到用户层的system("/bin/sh")。
 
