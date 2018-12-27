@@ -133,11 +133,11 @@ clean:
 
 ```
 
-&nbsp;&nbsp;&nbsp;&nbsp;<font size=2>仿佛回到了刚学pwn入门学stack overflow一样了嘿嘿。首先根据注释我们可以得到模块应该是开启了栈保护，也就是有一个canary的；然后从注册模块的函数看起，可以看到设置了read_proc和write_proc函数：</font></br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font size=2>仿佛回到了刚学pwn入门学stack overflow一样了嘿嘿。首先根据注释我们可以得到模块应该是**开启了栈保护**，也就是有一个**canary**的；然后从注册模块的函数看起，可以看到设置了read_proc和write_proc函数：</font></br>
 
-- csaw_read：函数初始化了一个局部缓冲区，写入了一个字符串，然后根据传入参数的偏移给用户层的缓冲区复制数据。这里有一个明显的问题就是off偏移是可以由用户层指定的，这样的话如果有一个特定的off就可以泄漏出stack canary。
+- csaw_read：函数初始化了一个局部缓冲区，写入了一个字符串，然后根据传入参数的偏移给用户层的缓冲区复制数据。这里有一个明显的问题就是**off偏移是可以由用户层指定的**，这样的话如果有一个**特定的off就可以泄漏出stack canary**。
 
-- csaw_write：漏洞更加明显，copy_from_user函数的参数count直接从用户层得到，这就使得可以传入任意大小的数值，可以写入任意长度的数据。
+- csaw_write：漏洞更加明显，**copy_from_user函数的参数count直接从用户层得到，这就使得可以传入任意大小的数值，可以写入任意长度的数据**。
 
 &nbsp;&nbsp;&nbsp;&nbsp;<font size=2>接下来我们先泄漏canary，思路很简单，read时首先设置一个偏移，然后直接读取出来就行了：</font></br>
 
