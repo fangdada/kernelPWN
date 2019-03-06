@@ -4,7 +4,7 @@
 
 &nbsp;&nbsp;&nbsp;&nbsp;<font size=2>环境搭建完了，我们就来先学一下最简单的null dereference的kernel漏洞利用，顾名思义，对未初始化的指针进行引用就会寻址到0地址，也就是null引用。如果程序中存在未初始化的函数指针，调用这个指针就会有一个类似call 0x00000000的行为。我们先来看一下32位下程序的内存分布：</font></br>
 
-![内存分布](./000.JPG)
+![内存分布](./000.jpg)
 
 &nbsp;&nbsp;&nbsp;&nbsp;<font size=2>所以假设我们有一个存在null dereference的漏洞的内核模块，当我们用一个用户进程去访问时，**mmap映射一块从0开始的内存**，然后在这块内存中布置好shellcode，然后调用未初始化函数指针时就会去调用我们的shellcode，完成提权攻击。所以有如下漏洞代码：</font></br>
 
@@ -65,7 +65,7 @@ int main(){
 
 &nbsp;&nbsp;&nbsp;&nbsp;<font size=2>当执行这个程序的时候，内存分布图是这样的</font>：</br>
 
-![mmap](./001.JPG)
+![mmap](./001.jpg)
 
 - mmap映射了最低处内存0的大小为0x1000的一块内存（并不是物理地址，是虚拟地址）；
 - 在这块内存上布置了shellcode；
@@ -74,7 +74,7 @@ int main(){
 
 &nbsp;&nbsp;&nbsp;&nbsp;<font size=2>最终内存分布图是这样的：</font></br>
 
-![shellcode](./002.JPG)
+![shellcode](./002.jpg)
 
 &nbsp;&nbsp;&nbsp;&nbsp;<font size=2>我的Makefile:</font></br>
 
