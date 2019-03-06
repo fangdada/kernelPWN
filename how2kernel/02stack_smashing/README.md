@@ -77,7 +77,7 @@ clean:
 
 ```
 
-&nbsp;&nbsp;&nbsp;&nbsp;<font size=2>用boot.sh启动qemu之后，直接执行poc可以发现eip最后地址为0x42424242（如果不行的话应该是开了栈保护，编辑linux kernel目录下的**.config**文件，注释掉"CONFIG\_CC\_STACKPROTECTOR=y"重新make一下就行了），偏移可以根据调试得到，函数ret末尾的汇编如下：</font></br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font size=2>用boot.sh启动qemu之后，直接执行poc可以发现eip最后地址为0x42424242（如果不行的话应该是开了栈保护，编辑linux kernel目录下的**\.config**文件，注释掉"CONFIG\_CC\_STACKPROTECTOR=y"重新make一下就行了），偏移可以根据调试得到，函数ret末尾的汇编如下：</font></br>
 
 ```assembly
    0xc883001e <bug2_write+30>    je     bug2_write+34 <0xc8830022>
