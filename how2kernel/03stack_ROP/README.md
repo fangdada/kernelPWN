@@ -2,7 +2,7 @@
 
 ## Author：Wenhuo
 
-> 环境：linux-4.4.72
+> 内核版本：linux-4.4.72
 >
 > 注：内核编译make menuconfig时注意去掉模块签名验证，方式如下：
 >
