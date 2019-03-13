@@ -153,7 +153,7 @@ MODULE_DESCRIPTION("Module vuln overflow");
 
 &nbsp;&nbsp;&nbsp;&nbsp;<font size=2>ROP链如下：</font></br>
 
-![ROP链](./ROP.png)
+![ROP链](https://raw.githubusercontent.com/fangdada/kernelPWN/master/how2kernel/03stack_ROP/ROP.png)
 
 &nbsp;&nbsp;&nbsp;&nbsp;<font size=2>用mov_cr4_pop_ret的指令关闭smep保护后就可以用get_root这个用户空间的函数进行getshell了，指令与函数内容如下：</font></br>
 
