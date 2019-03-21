@@ -2,7 +2,7 @@
 
 > 内核版本：Linux4.4.72
 >
-> 文件：[heap_cred.tar]()
+> 文件：[heap_cred.tar](https://raw.githubusercontent.com/fangdada/kernelPWN/master/how2kernel/06UAF_cred/UAF_cred.tar)
 
 &nbsp;&nbsp;&nbsp;&nbsp;<font size=2>同样用了[jinyu00](https://gitee.com/hac425/kernel_ctf)的例子，这题跟heap_bof那题基本一样，只是不同之处就是这题的利用方式从修改tty_operations变成了直接修改cred，跟上个例子一样，直接把一系列id都覆盖为0就行了。怎么修改呢？UAF，我们都知道了heap_bof那个例子漏洞特别多，无论是溢出还是直接编辑都可以，那么怎么通过修改堆块来修改cred呢？那就是**让cred结构体变成堆块**！</font></br>
 

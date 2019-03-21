@@ -13,6 +13,7 @@ Linux kernel版本会在文章开头处声明。</br>
 - [stack ROP](https://github.com/fangdada/kernelPWN/tree/master/how2kernel/03stack_ROP)
 - [heap ROP](https://github.com/fangdada/kernelPWN/tree/master/how2kernel/04heap_ROP)
 - [addr_limit](https://github.com/fangdada/kernelPWN/tree/master/how2kernel/05addr_limit)
+- [UAF_cred](https://github.com/fangdada/kernelPWN/tree/master/how2kernel/06UAF_cred)
 - ...
 
 </br>
