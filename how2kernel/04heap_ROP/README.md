@@ -2,7 +2,7 @@
 
 > 内核版本：Linux4.4.72
 >
-> 文件：[heap_ROP.c](),[poc.c]()
+> 文件：[heap_ROP.tar](https://raw.githubusercontent.com/fangdada/kernelPWN/master/how2kernel/04heap_ROP/heap_bof.tar)
 
 &nbsp;&nbsp;&nbsp;&nbsp;<font size=2>栈溢出学完了绕过canary和smep后，我们接下来看看如何利用堆，Linux内核堆分配的算法用的是slub，推荐一篇经典的博客讲解slub的：[linux 内核 内存管理 slub算法 （一） 原理](https://blog.csdn.net/lukuen/article/details/6935068)。slub将内存分组分配，若不足整块大小则会向上取整，除了两个特殊的组：96（0x60）和192（0xC0）；slub分配的内存块没有用户态的malloc分配的那样有一个堆头，没有pre_size和size，内存块都是紧贴在一起的；其他slub都跟malloc差不多，做题知道这些就差不多够了。</font></br>
 
