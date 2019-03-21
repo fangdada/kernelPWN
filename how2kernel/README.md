@@ -12,6 +12,7 @@ Linux kernel版本会在文章开头处声明。</br>
 - [stack smashing](https://github.com/fangdada/kernelPWN/tree/master/how2kernel/02stack_smashing)
 - [stack ROP](https://github.com/fangdada/kernelPWN/tree/master/how2kernel/03stack_ROP)
 - [heap ROP](https://github.com/fangdada/kernelPWN/tree/master/how2kernel/04heap_ROP)
+- [addr_limit](https://github.com/fangdada/kernelPWN/tree/master/how2kernel/05addr_limit)
 - ...
 
 </br>
